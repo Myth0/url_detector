@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Scan History | PhishGuard{% endblock %}
+{% block content %}
+<section class="hero compact-hero">
+  <div class="eyebrow">ACTIVITY LOG</div>
+  <h1>Scan history</h1>
+  <p class="lead">The most recent 100 scans are stored locally in SQLite on this computer.</p>
+</section>
+<section class="panel">
+  <div class="panel-heading"><h2>Previous scans</h2>
+    {% if scans %}
+    <form method="post" action="{{ url_for('clear_history') }}" onsubmit="return confirm('Clear all scan history?');">
+      <button class="button-danger" type="submit">Clear history</button>
+    </form>
+    {% endif %}
+  </div>
+  {% if scans %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>URL</th><th>Score</th><th>Category</th><th>Reasons</th><th>Scanned at</th></tr></thead>
+    <tbody>
+    {% for scan in scans %}
+      <tr>
+        <td class="url-cell">{{ scan.url }}</td>
+        <td><strong>{{ scan.score }}/100</strong></td>
+        <td><span class="tag {{ 'tag-high' if scan.category == 'High Risk' else ('tag-medium' if scan.category == 'Suspicious' else 'tag-low') }}">{{ scan.category }}</span></td>
+        <td class="reasons-cell">{{ scan.reasons.replace('\n', '; ') }}</td>
+        <td>{{ scan.scanned_at }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p class="empty">No saved scans. Go to Scanner and analyze a sample URL.</p>
+  {% endif %}
+</section>
+{% endblock %}

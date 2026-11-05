@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}URL Scanner | PhishGuard{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="eyebrow">CYBERSECURITY • URL ANALYSIS</div>
+  <h1>Spot suspicious links<br><span>before you trust them.</span></h1>
+  <p class="lead">Analyze URL characteristics with simple, explainable rules. This tool does not visit the submitted website.</p>
+</section>
+
+<section class="stats">
+  <article class="stat-card"><span>Total scans</span><strong>{{ total_scans }}</strong></article>
+  <article class="stat-card"><span>Suspicious</span><strong>{{ suspicious }}</strong></article>
+  <article class="stat-card"><span>High risk</span><strong>{{ high_risk }}</strong></article>
+</section>
+
+<section class="panel scanner-panel">
+  <div class="panel-heading">
+    <div><div class="eyebrow">URL SCANNER</div><h2>Analyze a link</h2></div>
+    <span class="pill">Offline checks</span>
+  </div>
+  <form method="post" action="{{ url_for('index') }}" class="scan-form">
+    <label for="url">Website URL</label>
+    <div class="input-row">
+      <input id="url" name="url" type="text" maxlength="2048"
+             placeholder="https://example.com/login" required
+             value="{{ result.url if result else '' }}">
+      <button type="submit">Scan URL <span aria-hidden="true">→</span></button>
+    </div>
+    <p class="hint">Enter a URL starting with http:// or https://. Do not open suspicious links to test them.</p>
+  </form>
+</section>
+
+{% if result %}
+<section class="panel result-panel">
+  <div class="result-top">
+    <div>
+      <div class="eyebrow">SCAN RESULT</div>
+      <h2>{{ result.category }}</h2>
+      <p class="scanned-url">{{ result.url }}</p>
+    </div>
+    <div class="score score-{{ 'high' if result.score >= 50 else ('medium' if result.score >= 25 else 'low') }}">
+      <strong>{{ result.score }}</strong><span>/ 100</span>
+      <small>Risk score</small>
+    </div>
+  </div>
+  <div class="meter"><span style="width: {{ result.score }}%"></span></div>
+  <h3>Why was this score assigned?</h3>
+  <ul class="reason-list">
+    {% for reason in result.reasons %}
+      <li><span class="reason-dot">!</span><span>{{ reason }}</span></li>
+    {% endfor %}
+  </ul>
+  <div class="notice"><strong>Remember:</strong> this score is based on basic heuristics. It is not a verdict. Verify important links through the organisation's official app or a trusted, independently typed address.</div>
+</section>
+{% endif %}
+
+<section class="panel recent-panel">
+  <div class="panel-heading"><div><div class="eyebrow">ACTIVITY</div><h2>Recent scans</h2></div><a class="text-link" href="{{ url_for('history') }}">View all →</a></div>
+  {% if recent %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>URL</th><th>Risk</th><th>Category</th><th>Time</th></tr></thead>
+    <tbody>
+    {% for scan in recent %}
+      <tr>
+        <td class="url-cell">{{ scan.url }}</td>
+        <td><strong>{{ scan.score }}/100</strong></td>
+        <td><span class="tag {{ 'tag-high' if scan.category == 'High Risk' else ('tag-medium' if scan.category == 'Suspicious' else 'tag-low') }}">{{ scan.category }}</span></td>
+        <td>{{ scan.scanned_at }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+    <p class="empty">No scans yet. Try one of the safe test examples below.</p>
+  {% endif %}
+</section>
+
+<section class="test-examples">
+  <h2>Safe test examples</h2>
+  <p>These are reserved example domains or deliberately suspicious-looking strings. The results demonstrate the rules and do not indicate real-world reputation.</p>
+  <div class="example-grid">
+    <div class="example"><span class="tag tag-low">Baseline</span><code>https://example.com</code></div>
+    <div class="example"><span class="tag tag-medium">Keyword test</span><code>http://example.com/login-verify</code></div>
+    <div class="example"><span class="tag tag-medium">IP test</span><code>http://192.0.2.10/account</code></div>
+  </div>
+</section>
+{% endblock %}
